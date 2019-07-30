@@ -26,6 +26,7 @@ import (
 	"github.com/mesos/mesos-go/api/v1/lib/httpcli"
 	"net/url"
 	"sync"
+	"os"
 )
 
 const (
@@ -52,12 +53,21 @@ type containerInfo struct {
 	labels map[string]string
 }
 
+func getHttpSchema() string {
+	value, exists := os.LookupEnv("LIBPROCESS_SSL_ENABLED")
+	if exists {
+		value = "https"
+	}else{
+		value = "http"
+	}
+	return value
+}
 // Client is an interface to query mesos agent http endpoints
 func Client() (mesosAgentClient, error) {
 	mesosClientOnce.Do(func() {
 		// Start Client
 		apiURL := url.URL{
-			Scheme: "http",
+			Scheme: getHttpSchema(),
 			Host:   *MesosAgentAddress,
 			Path:   "/api/v1",
 		}
